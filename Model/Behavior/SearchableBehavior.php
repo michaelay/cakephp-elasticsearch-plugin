@@ -267,7 +267,7 @@ class SearchableBehavior extends ModelBehavior {
 			}
 		} else {
 			if ($id) {
-				$params['conditions'][$Model->primaryKey] = $id;
+        $params['conditions'][$Model->name.'.'.$Model->primaryKey] = $id;
 			} else {
 				$params['offset'] = $offset;
 				if (empty($params['limit'])) {
