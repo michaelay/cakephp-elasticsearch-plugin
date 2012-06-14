@@ -381,7 +381,7 @@ class SearchableBehavior extends ModelBehavior {
 				$doc['_url'] = call_user_func($urlCb, $meta['_id'], $doc['_model']);
 			}
 
-			$commands .= json_encode(array('create' => $meta)) . "\n";
+			$commands .= json_encode(array('index' => $meta)) . "\n";
 			$commands .= $this->_serializeDocument($Model, $doc) . "\n";
 			$docCount++;
 		}
@@ -389,7 +389,7 @@ class SearchableBehavior extends ModelBehavior {
 		$this->progress($Model, '(store)' . "\n");
 
 		if ($docCount == 1) {
-			$res = $this->execute($Model, 'PUT', '_bulk', $doc);
+			$res = $this->execute($Model, 'PUT', '_bulk', $commands);
 		} else {
 			$res = $this->execute($Model, 'PUT', '_bulk', $commands, array('prefix' => '', ));
 		}
