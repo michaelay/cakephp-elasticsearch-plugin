@@ -510,6 +510,7 @@ class SearchableBehavior extends ModelBehavior {
 			'enforce',
 			'highlight',
 			'limit',
+      'offset',
 			'fields',
 		));
 
@@ -520,6 +521,9 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		if ($queryParams['limit']) {
 			$payload['size'] = $queryParams['limit'];
+		}
+		if ($queryParams['offset']) {
+			$payload['from'] = $queryParams['offset'];
 		}
 		if (@$queryParams['sort']) {
 			$payload['sort'] = $queryParams['sort'];
