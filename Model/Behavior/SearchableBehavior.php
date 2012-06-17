@@ -44,6 +44,7 @@ class SearchableBehavior extends ModelBehavior {
 		'index_chunksize' => 10000,
 		'static_url_generator' => array('{model}', 'modelUrl'),
 		'error_handler' => 'php',
+		'mapping' => array(),
 		'enforce' => array(),
 		'fields' => '_all',
 		'fields_excludes' => array(
@@ -163,9 +164,12 @@ class SearchableBehavior extends ModelBehavior {
 			$this->opt($Model, 'cb_progress', $cbProgress);
 		}
 
+		$m  = $this->opt($Model, 'mapping');
+
 		// Create index
 		$u = $this->execute($Model, 'PUT', '', array('fullIndex' => true, ));
 		$d = $this->execute($Model, 'DELETE', '');
+		if (!empty ($m)) $m = $this->execute($Model, 'PUT', '_mapping', $m);
 		$o = $this->execute($Model, 'POST', '_refresh', array('fullIndex' => true, ));
 
 		// Get records
