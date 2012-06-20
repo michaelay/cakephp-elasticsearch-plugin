@@ -387,6 +387,7 @@ class SearchableBehavior extends ModelBehavior {
 
 			$commands .= json_encode(array('index' => $meta)) . "\n";
 			$commands .= $this->_serializeDocument($Model, $doc) . "\n";
+            $commands = str_replace(array('"0000-00-00"', '""'), array('null', 'null'), $commands); // guard invalid input
 			$docCount++;
 		}
 
