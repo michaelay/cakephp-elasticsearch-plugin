@@ -52,6 +52,8 @@ class SearchableBehavior extends ModelBehavior {
 			'_model',
 			'_label',
 		),
+        'sort' => array(),
+        'filter' => array(),
 	);
 
 	public $localFields = array(
@@ -515,8 +517,10 @@ class SearchableBehavior extends ModelBehavior {
 			'enforce',
 			'highlight',
 			'limit',
-      'offset',
+            'offset',
 			'fields',
+			'filter',
+            'sort',
 		));
 
 		$payload = array();
@@ -530,22 +534,32 @@ class SearchableBehavior extends ModelBehavior {
 		if ($queryParams['offset']) {
 			$payload['from'] = $queryParams['offset'];
 		}
-		if (@$queryParams['sort']) {
+		if ($queryParams['sort']) {
 			$payload['sort'] = $queryParams['sort'];
 		}
 
-		$payload['query']['bool']['must'][0]['query_string'] = array(
+		$payload_query['bool']['must'][0]['query_string'] = array(
 			'query' => $query,
 			'use_dis_max' => true,
 		);
 		if (is_array($queryParams['fields'])) {
-			$payload['query']['bool']['must'][0]['query_string']['fields'] = $queryParams['fields'];
+			$payload_query['bool']['must'][0]['query_string']['fields'] = $queryParams['fields'];
 		}
 
 		if ($queryParams['enforce']) {
-			$i = count ($payload['query']['bool']['must']);
-			$payload['query']['bool']['must'][$i]['term'] = $queryParams['enforce'];
+			$i = count ($payload_query['bool']['must']);
+			$payload_query['bool']['must'][$i]['term'] = $queryParams['enforce'];
 		}
+		if ($queryParams['filter']) {
+            $payload['query'] = array(
+                'filtered' => array(
+                    'query' => $payload_query, 
+                    'filter' => $queryParams['filter']
+                )
+            );
+		} else { 
+		    $payload['query'] = $payload_query; 
+        } 
 
 		return $payload;
 	}
