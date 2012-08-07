@@ -180,7 +180,7 @@ class SearchableBehavior extends ModelBehavior {
 		$count  = 0;
 		while (true) {
 			$curCount = $this->_fillChunk($Model, $offset, $limit);
-			$count   += empty($curCount) ? 0 : $curCount;
+			$count   += $curCount;
 
 			if ($curCount < $limit) {
 				$this->progress($Model, 'Reached curCount ' . $curCount . ' < ' . $limit);
@@ -401,12 +401,16 @@ class SearchableBehavior extends ModelBehavior {
 			$res = $this->execute($Model, 'PUT', '_bulk', $commands, array('prefix' => '', ));
 		}
 
-		if (is_string($res)) {
+        if (is_string($res)) {
+            error_log('Unable to add items.');
+            error_log(var_export($res, true));
+            /*
 			return $this->err(
 				$Model,
 				'Unable to add items. %s',
 				$res
-			);
+            );
+             */
 		} else {
 			//$this->progress($Model, json_encode($res). "\n");
 		}
