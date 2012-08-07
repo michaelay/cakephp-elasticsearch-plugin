@@ -176,7 +176,8 @@ class SearchableBehavior extends ModelBehavior {
 
 		// Get records
 		$offset = 0;
-		$limit  = $this->opt($Model, 'index_chunksize');
+        $limit  = $this->opt($Model, 'index_chunksize');
+        $limit = max($limit, 2);
 		$count  = 0;
 		while (true) {
 			$curCount = $this->_fillChunk($Model, $offset, $limit);
@@ -402,15 +403,11 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
         if (is_string($res)) {
-            error_log('Unable to add items.');
-            error_log(var_export($res, true));
-            /*
 			return $this->err(
 				$Model,
 				'Unable to add items. %s',
 				$res
             );
-             */
 		} else {
 			//$this->progress($Model, json_encode($res). "\n");
 		}
