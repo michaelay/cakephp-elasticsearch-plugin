@@ -180,7 +180,7 @@ class SearchableBehavior extends ModelBehavior {
 		$count  = 0;
 		while (true) {
 			$curCount = $this->_fillChunk($Model, $offset, $limit);
-			$count   += $curCount;
+			$count   += empty($curCount) ? 0 : $curCount;
 
 			if ($curCount < $limit) {
 				$this->progress($Model, 'Reached curCount ' . $curCount . ' < ' . $limit);
@@ -209,7 +209,7 @@ class SearchableBehavior extends ModelBehavior {
 		if (!($params = $this->opt($Model, 'index_find_params'))) {
 			$params = array();
 		}
-		
+
 		$index_name = $this->opt($Model, 'index_name');
 		$type       = $this->opt($Model, 'type');
 
@@ -238,7 +238,7 @@ class SearchableBehavior extends ModelBehavior {
 
 			$sql = $params;
 			$sql = str_replace('{offset_limit_placeholder}', $sqlLimit, $sql);
-			
+
 			if ($id !== null) {
 				$singleSql = 'AND `' . $Model->useTable . '`.`' . $Model->primaryKey . '` = "' . addslashes($id) . '"';
 				$sql = str_replace('{single_placeholder}', $singleSql, $sql);
@@ -553,13 +553,13 @@ class SearchableBehavior extends ModelBehavior {
 		if ($queryParams['filter']) {
             $payload['query'] = array(
                 'filtered' => array(
-                    'query' => $payload_query, 
+                    'query' => $payload_query,
                     'filter' => $queryParams['filter']
                 )
             );
-		} else { 
-		    $payload['query'] = $payload_query; 
-        } 
+		} else {
+		    $payload['query'] = $payload_query;
+        }
 
 		return $payload;
 	}
