@@ -120,6 +120,26 @@ class SearchableBehavior extends ModelBehavior {
 		return $models;
 	}
 
+	public function afterDelete ($Model) {
+		if (!$this->opt($Model, 'realtime_update')) {
+			return true;
+		}
+		/*
+		if (!($data = @$Model->data[$Model->alias])) {
+			return true;
+		}
+		*/
+		if (!($id = @$data[$Model->primaryKey])) {
+			$id = $Model->id;
+		}
+		//$res = $this->_fillChunk($Model, null, null, $id);
+
+		// Index needs a moment to be updated
+		$this->execute($Model, 'DELETE', $id);
+
+		return !!$res;
+	}
+
 	public function afterSave ($Model) {
 		if (!$this->opt($Model, 'realtime_update')) {
 			return true;
@@ -216,6 +236,7 @@ class SearchableBehavior extends ModelBehavior {
 
 
 		$primKeyPath  = $Model->alias . '/' . $Model->primaryKey;
+		$primKeyPath = $Model->primaryKey ;
 		$labelKeyPath = $Model->alias . '/' . $Model->displayField;
 		if (!empty($Model->labelField)) {
 			$labelKeyPath = $Model->alias . '/' . $Model->labelField;
@@ -225,11 +246,11 @@ class SearchableBehavior extends ModelBehavior {
 		if (@$Model->descripField) {
 			$descKeyPath = $Model->alias . '/' . @$Model->descripField;
 		}
-
+//debug ( $params) ;
 		$isQuery = is_string($params);
 		if ($isQuery) {
 			$sqlLimit = '';
-
+//debug ( $isQuery) ;
 			if ($limit) {
 				$sqlLimit = 'LIMIT ' . $limit;
 			}
@@ -320,9 +341,14 @@ class SearchableBehavior extends ModelBehavior {
 			if ($isQuery) {
 				$doc = $result;
 			} else {
-				$doc = Set::flatten($result, '/');
+				$doc = $result;
+				//$doc = Set::flatten($result, '/');
 			}
 
+			$doc = $doc['Car'] ;
+			//debug ( $doc) ;
+			//debug  ($primKeyPath) ;
+			
 			if (empty($doc[$primKeyPath])) {
 				return $this->err(
 					$Model,
@@ -387,7 +413,7 @@ class SearchableBehavior extends ModelBehavior {
 			if (is_array($urlCb)) {
 				$doc['_url'] = call_user_func($urlCb, $meta['_id'], $doc['_model']);
 			}
-
+			
 			$commands .= json_encode(array('index' => $meta)) . "\n";
 			$commands .= $this->_serializeDocument($Model, $doc) . "\n";
             $commands = str_replace(array('"0000-00-00"', '""'), array('null', 'null'), $commands); // guard invalid input
@@ -395,11 +421,11 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
 		$this->progress($Model, '(store)' . "\n");
-
 		if ($docCount == 1) {
 			$res = $this->execute($Model, 'PUT', '_bulk', $commands);
 		} else {
-			$res = $this->execute($Model, 'PUT', '_bulk', $commands, array('prefix' => '', ));
+			$res = $this->execute($Model, 'PUT', '_bulk', $commands);
+			//$res = $this->execute($Model, 'PUT', '_bulk', $commands, array('prefix' => '', ));
 		}
 
         if (is_string($res)) {
@@ -478,13 +504,12 @@ class SearchableBehavior extends ModelBehavior {
 		);
 
 //        pr(compact('uri', 'method', 'payload'));
-
+		error_log ( $uri) ;
 		curl_setopt($conn, CURLOPT_URL, $uri);
 		curl_setopt($conn, CURLOPT_TIMEOUT, 3);
 		curl_setopt($conn, CURLOPT_PORT, $this->opt($Model, 'port'));
 		curl_setopt($conn, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($conn, CURLOPT_CUSTOMREQUEST, $method);
-
 		if (!empty($payload)) {
 			if (is_array($payload)) {
 				$content = $this->_serializeDocument($Model, $payload);
